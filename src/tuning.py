@@ -36,7 +36,7 @@ AGENT_REGISTRY = {
 }
 
 
-def evaluate_config(agent_class, agent_params, env_config, 
+def evaluate_config(agent_class, agent_params, env_config,
                     train_episodes=300, eval_episodes=50, seed=None):
     """Train an agent with given params and return evaluation metrics."""
     if seed is not None:
@@ -114,7 +114,7 @@ def _find_convergence(rewards, window=50, threshold=0.05):
     """Find the episode where rewards stabilise (change < threshold)."""
     if len(rewards) < window * 2:
         return len(rewards)
-    
+
     smoothed = np.convolve(rewards, np.ones(window) / window, mode="valid")
     for i in range(len(smoothed) - window):
         segment = smoothed[i:i + window]
@@ -173,7 +173,7 @@ def grid_search(algorithm="qlearning", env_config=None, output_dir="results/tuni
     combos = list(itertools.product(*param_grid.values()))
 
     print(f"\n{'='*60}")
-    print(f"  HYPERPARAMETER GRID SEARCH")
+    print("  HYPERPARAMETER GRID SEARCH")
     print(f"  Algorithm: {algorithm}")
     print(f"  Combinations: {len(combos)}")
     print(f"{'='*60}\n")
@@ -236,7 +236,7 @@ def grid_search(algorithm="qlearning", env_config=None, output_dir="results/tuni
         }, f, indent=2)
 
     print(f"\n{'='*60}")
-    print(f"  BEST CONFIG (Rank 1)")
+    print("  BEST CONFIG (Rank 1)")
     print(f"  Avg Reward: {best_config['cv_avg_reward']:.2f}")
     print(f"  Params: {best_config['params']}")
     print(f"{'='*60}")
@@ -245,7 +245,7 @@ def grid_search(algorithm="qlearning", env_config=None, output_dir="results/tuni
     return best_config, results
 
 
-def random_search(algorithm="qlearning", n_trials=20, env_config=None, 
+def random_search(algorithm="qlearning", n_trials=20, env_config=None,
                   output_dir="results/tuning"):
     """Random search over continuous hyperparameter ranges."""
     os.makedirs(output_dir, exist_ok=True)
@@ -260,7 +260,7 @@ def random_search(algorithm="qlearning", n_trials=20, env_config=None,
     agent_class = AGENT_REGISTRY[algorithm]
 
     print(f"\n{'='*60}")
-    print(f"  HYPERPARAMETER RANDOM SEARCH")
+    print("  HYPERPARAMETER RANDOM SEARCH")
     print(f"  Algorithm: {algorithm}")
     print(f"  Trials: {n_trials}")
     print(f"{'='*60}\n")
