@@ -33,3 +33,5 @@ mlartifacts/
 
 # Docker
 *.log
+
+logs/

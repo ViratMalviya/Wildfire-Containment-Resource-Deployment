@@ -33,6 +33,38 @@ Wildfires cause massive environmental destruction, releasing ~8 billion tonnes o
 
 ## 3. Use Cases
 
+### Use Case Overview Diagram
+```mermaid
+flowchart LR
+    %% Actors
+    Actor1(["🧑‍🔬 Data Scientist / Researcher"])
+    Actor2(["🧑‍💼 Stakeholder / Evaluator"])
+    Actor3(["⚙️ MLOps Engineer"])
+
+    %% System Boundary
+    subgraph "PyroShield AI System"
+        direction TB
+        UC1(["UC-01: Train RL Agent"])
+        UC2(["UC-02: Evaluate Policy vs Baseline"])
+        UC3(["UC-03: Interactive Web Simulation"])
+        UC4(["UC-04: Compare Experiments"])
+        UC5(["UC-05: Deploy to Production"])
+    end
+
+    %% Relationships
+    Actor1 -.-> UC1
+    Actor1 -.-> UC2
+    Actor1 -.-> UC4
+    Actor2 -.-> UC3
+    Actor3 -.-> UC5
+
+    %% Styling
+    classDef actor fill:#2d3436,stroke:#b2bec3,stroke-width:2px,color:#fff,shape:rect,rx:10;
+    classDef usecase fill:#0984e3,stroke:#74b9ff,stroke-width:2px,color:#fff,shape:pill;
+    class Actor1,Actor2,Actor3 actor;
+    class UC1,UC2,UC3,UC4,UC5 usecase;
+```
+
 ### UC-01: Train RL Agent for Wildfire Containment
 - **Actor:** Data Scientist / Researcher
 - **Precondition:** Environment configured, YAML experiment config available

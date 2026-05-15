@@ -56,7 +56,7 @@ wildfire-rl/
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Running Locally)
 
 ### 1. Install dependencies
 
@@ -64,48 +64,68 @@ wildfire-rl/
 pip install -r requirements.txt
 ```
 
-### 2. Train (Experiment 1)
+### 2. Train the Agent
 
 ```bash
 python train.py --config configs/qlearning_v1.yaml
-```
-
-### 3. Train (Experiment 2)
-
-```bash
 python train.py --config configs/qlearning_v2.yaml
 ```
 
-### 4. Evaluate — Baseline vs RL
+### 3. Evaluate Policies
 
 ```bash
 python evaluate.py --config configs/qlearning_v1.yaml
 ```
 
-### 5. View MLflow Dashboard
+### 4. Start the Application Stack
 
+You can run the full system (Backend API and Frontend Dashboard) manually:
+
+**Terminal 1 (Backend API):**
 ```bash
-mlflow ui --port 5000
-# Open http://localhost:5000 in browser
+# Set encoding for Windows environments
+export PYTHONIOENCODING=utf-8 
+pip install fastapi uvicorn
+python api/app.py
 ```
+*API runs on `http://localhost:8000`*
+
+**Terminal 2 (Frontend UI):**
+```bash
+python -m http.server 8080 -d frontend
+```
+*Dashboard runs on `http://localhost:8080`*
+
+### 🛑 How to Stop Gracefully
+
+If you are running the scripts manually in your terminal, press `Ctrl+C` in the respective terminal windows to safely terminate the running servers and python scripts.
 
 ---
 
-## 🐳 Docker Deployment
+## 🐳 Docker Deployment (Recommended)
 
-### Full Stack (MLflow + Training + Evaluation)
+The easiest way to run the **entire stack** (MLflow Tracking, Training, Evaluation, Backend API, and Frontend Dashboard) is using Docker.
 
-```bash
-docker-compose up --build
-# MLflow UI available at http://localhost:5000
-```
-
-### Single Container
+### Start the Full Stack
 
 ```bash
-docker build -t wildfire-rl .
-docker run -v $(pwd)/results:/app/results wildfire-rl python train.py --config configs/qlearning_v1.yaml
+docker-compose up -d --build
 ```
+
+**Services Available:**
+- 🖥️ **Frontend Dashboard**: `http://localhost:8080`
+- ⚡ **Backend API Docs**: `http://localhost:8000/docs`
+- 📊 **MLflow Tracking UI**: `http://localhost:5000`
+
+### Stop the Full Stack Gracefully
+
+To safely spin down the containers, stop the servers, and free up ports without losing your data:
+
+```bash
+docker-compose down
+```
+
+*(Note: Data is persisted in the `mlflow-data` volume and the mapped `results` directory).*
 
 ---
 

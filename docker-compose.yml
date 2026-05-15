@@ -64,5 +64,34 @@ services:
       train:
         condition: service_completed_successfully
 
+  # ── FastAPI Backend ──
+  api:
+    build: .
+    container_name: wildfire-api
+    ports:
+      - "8000:8000"
+    command: bash -c "pip install fastapi uvicorn && python api/app.py"
+    environment:
+      - PYTHONIOENCODING=utf-8
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    volumes:
+      - ./api:/app/api
+      - ./models:/app/models
+      - ./logs:/app/logs
+      - ./sim:/app/sim
+      - ./src:/app/src
+
+  # ── Frontend Dashboard ──
+  frontend:
+    image: python:3.10-slim
+    container_name: wildfire-frontend
+    working_dir: /app/frontend
+    command: python -m http.server 8080
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./frontend:/app/frontend
+
 volumes:
   mlflow-data:

@@ -25,8 +25,9 @@
             <a href="#simulator" class="nav-link" data-section="simulator">Simulator</a>
             <a href="#training" class="nav-link" data-section="training">Training</a>
             <a href="#comparison" class="nav-link" data-section="comparison">Results</a>
-            <a href="#sdg" class="nav-link" data-section="sdg">SDG Impact</a>
             <a href="#architecture" class="nav-link" data-section="architecture">Architecture</a>
+            <a href="#sdg" class="nav-link" data-section="sdg">SDG Impact</a>
+            <a href="#mlops" class="nav-link" data-section="mlops">MLOps</a>
         </div>
         <div class="nav-badge">
             <span class="badge-dot"></span>
@@ -465,43 +466,75 @@
             <p class="section-desc">Experiment tracking, versioning, reproducibility, and monitoring.</p>
         </div>
         <div class="mlops-container">
+            <!-- MLOps Pipeline Visual Flow -->
+            <div class="arch-flow">
+                <div class="arch-node glass-card">
+                    <div class="arch-icon">📂</div>
+                    <h4>Data Versioning</h4>
+                    <p>DVC tracks grid maps & configs</p>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node glass-card">
+                    <div class="arch-icon">📈</div>
+                    <h4>Model Tracking</h4>
+                    <p>MLflow logs metrics & artifacts</p>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node glass-card">
+                    <div class="arch-icon">🤖</div>
+                    <h4>Model Registry</h4>
+                    <p>Best RL policies tagged & stored</p>
+                </div>
+                <div class="arch-arrow">→</div>
+                <div class="arch-node glass-card">
+                    <div class="arch-icon">🚀</div>
+                    <h4>Live Serving</h4>
+                    <p>FastAPI & Docker deployment</p>
+                </div>
+            </div>
+
             <div class="mlops-grid">
                 <div class="mlops-card glass-card">
                     <div class="mlops-icon">🏷️</div>
-                    <h4>Git Versioning</h4>
+                    <h4>GitOps / Versioning</h4>
                     <div class="code-block">
                         <code>git tag exp-qlearning-1</code>
                         <code>git tag exp-qlearning-2</code>
                     </div>
                 </div>
                 <div class="mlops-card glass-card">
-                    <div class="mlops-icon">📊</div>
-                    <h4>Experiment Tracking</h4>
-                    <div class="code-block">
-                        <code>results/results_exp-qlearning-1.csv</code>
-                        <code>results/log_exp-qlearning-1.json</code>
-                    </div>
-                </div>
-                <div class="mlops-card glass-card">
                     <div class="mlops-icon">🔄</div>
                     <h4>Reproducibility</h4>
                     <div class="code-block">
-                        <code>python train.py --config configs/qlearning_v1.yaml</code>
+                        <code>python train.py --config config.yaml</code>
+                        <code># Deterministic seeds</code>
+                    </div>
+                </div>
+                <div class="mlops-card glass-card">
+                    <div class="mlops-icon">🐳</div>
+                    <h4>Containerisation</h4>
+                    <div class="code-block">
+                        <code>docker build -t pyro .</code>
+                        <code>docker-compose up -d</code>
                     </div>
                 </div>
                 <div class="mlops-card glass-card">
                     <div class="mlops-icon">📡</div>
-                    <h4>Monitoring Plan</h4>
+                    <h4>Live Monitoring</h4>
                     <ul class="monitoring-list">
-                        <li>Burned area per incident</li>
-                        <li>Resource utilisation rate</li>
-                        <li>Response time</li>
-                        <li>Model drift detection</li>
+                        <li>Data Drift Detection</li>
+                        <li>RL Reward Degradation</li>
+                        <li>Resource utilization</li>
+                        <li>API Response times</li>
                     </ul>
                 </div>
             </div>
+
             <div class="mlops-policies glass-card">
-                <h4>💾 Saved Policy Versions</h4>
+                <h4>💾 Model Registry & Saved Policies</h4>
+                <p class="section-desc">
+                    Trained RL policies are exported as serialized Q-tables, versioned via DVC, and loaded by the FastAPI backend for real-time inference.
+                </p>
                 <div class="policy-list">
                     <div class="policy-item">
                         <span class="policy-icon">📦</span>
@@ -509,9 +542,9 @@
                         <span class="policy-tag">v1 (exploring)</span>
                     </div>
                     <div class="policy-item">
-                        <span class="policy-icon">📦</span>
+                        <span class="policy-icon">🏆</span>
                         <span class="policy-name">policy_exp-qlearning-1_final.pkl</span>
-                        <span class="policy-tag best">v1 (best)</span>
+                        <span class="policy-tag best">v1 (PRODUCTION)</span>
                     </div>
                     <div class="policy-item">
                         <span class="policy-icon">📦</span>
