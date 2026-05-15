@@ -1,102 +1,67 @@
-# Contributing to PyroShield AI 🔥
+# 🤝 Contributing — Wildfire Containment & Resource Deployment
 
-Thank you for your interest in contributing to the Wildfire Containment & Resource Deployment project!
-
-## 🌿 Branch Strategy
-
-We follow a structured Git branching model:
+## Branching Strategy (Git Flow)
 
 ```
-main        ← Production-ready, tagged releases
-  └── dev   ← Integration branch, CI runs here
-       └── feature/xyz  ← Individual feature branches
+main            ─── stable, production-ready releases
+  └── develop   ─── integration branch for features
+       ├── feature/<name>
+       ├── bugfix/<name>
+       └── experiment/<name>
 ```
 
-### Workflow
+| Branch Type | Pattern | Example |
+|---|---|---|
+| Feature | `feature/<desc>` | `feature/mlflow-tracking` |
+| Bugfix | `bugfix/<desc>` | `bugfix/reward-calculation` |
+| Experiment | `experiment/<name>` | `experiment/dqn-agent` |
+| Release | `release/v<ver>` | `release/v1.0.0` |
 
-1. **Create a feature branch** from `dev`:
-   ```bash
-   git checkout dev
-   git pull origin dev
-   git checkout -b feature/your-feature-name
-   ```
+## Workflow
 
-2. **Make changes**, commit with descriptive messages:
-   ```bash
-   git add .
-   git commit -m "feat: add SARSA agent implementation"
-   ```
+1. Create feature branch from `develop`
+2. Commit with conventional messages: `feat(agent): add Boltzmann exploration`
+3. Push and open Pull Request to `develop`
+4. Code review (1 approval required)
+5. Squash-merge into `develop`
+6. Release: merge `develop` → `main`, tag with `git tag -a v1.0.0`
 
-3. **Push and open a PR** to `dev`:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
+## Commit Types
 
-4. **PR Review** → At least one approval required
-5. **Merge to dev** → CI runs tests + training
-6. **Release** → `dev` merged to `main` with version tag
+| Type | Use |
+|---|---|
+| `feat` | New feature |
+| `fix` | Bug fix |
+| `docs` | Documentation |
+| `ci` | CI/CD changes |
+| `experiment` | New ML experiment |
 
-### Commit Message Convention
+## Experiment Workflow
 
-```
-type: short description
+1. Create YAML config in `configs/`
+2. `python train.py --config configs/<new>.yaml`
+3. `python evaluate.py --config configs/<new>.yaml`
+4. `git tag exp-<name>` and push
 
-Types:
-  feat     — New feature
-  fix      — Bug fix
-  docs     — Documentation
-  refactor — Code restructuring
-  test     — Adding/updating tests
-  infra    — CI/CD, Docker, K8s changes
-  data     — Data pipeline changes
-  model    — ML model changes
-```
-
-## 🧪 Testing
-
-Before submitting a PR:
+## Rollback Procedures
 
 ```bash
-# Run the full test suite
-python -m pytest tests/ -v
+# Model rollback — use earlier checkpoint
+python evaluate.py --policy models/policy_exp-qlearning-1_ep400.pkl
 
-# Run training (quick check)
-python train.py --config configs/qlearning_v1.yaml
+# Code rollback
+git checkout exp-qlearning-1    # checkout experiment tag
+git revert HEAD                 # revert last commit on main
 
-# Check API
-python -m api.app  # then curl http://localhost:8000/health
+# MLflow rollback — transition model stage via UI
+# Production → Archived, Staging → Production
 ```
 
-## 📊 Model Changes
+## Code Review Checklist
 
-If your PR modifies the ML pipeline:
-
-1. Run both experiments and log to MLflow
-2. Compare metrics (reward, burned area) before and after
-3. Include comparison in PR description
-4. Update configs if hyperparameters changed
-
-## 🐳 Docker
-
-Test Docker build locally:
-```bash
-docker build -t pyroshield .
-docker run -p 8000:8000 pyroshield
-```
-
-## 📝 Code Style
-
-- Follow PEP 8
-- Max line length: 120 characters
-- Use type hints where practical
-- Add docstrings to all public functions
-- Keep functions focused and under 50 lines where possible
-
-## 🤝 Code Review Guidelines
-
-Reviewers should check:
-- [ ] Correctness of algorithm implementation
-- [ ] Test coverage for new code
-- [ ] No hardcoded paths or credentials
-- [ ] Documentation updated
-- [ ] CI pipeline passes
+- [ ] PEP-8 compliant
+- [ ] Docstrings on all functions
+- [ ] YAML config valid
+- [ ] Training converges (check curves)
+- [ ] Results CSV/JSON generated
+- [ ] requirements.txt updated if needed

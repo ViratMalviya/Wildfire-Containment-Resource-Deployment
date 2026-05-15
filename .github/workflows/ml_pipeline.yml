@@ -1,0 +1,98 @@
+name: ML Pipeline — Train, Evaluate & Register
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  PYTHON_VERSION: "3.10"
+  MLFLOW_TRACKING_URI: "file:./mlruns"
+
+jobs:
+  # ────────────────────────────────────────────
+  # Job 1: Lint & Validate
+  # ────────────────────────────────────────────
+  lint:
+    name: 🔍 Lint & Validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install flake8
+
+      - name: Lint with flake8
+        run: |
+          flake8 --max-line-length=120 --ignore=E501,W503 train.py evaluate.py src/ sim/
+
+      - name: Validate YAML configs
+        run: |
+          python -c "import yaml; yaml.safe_load(open('configs/qlearning_v1.yaml'))"
+          python -c "import yaml; yaml.safe_load(open('configs/qlearning_v2.yaml'))"
+
+  # ────────────────────────────────────────────
+  # Job 2: Train & Evaluate
+  # ────────────────────────────────────────────
+  train:
+    name: 🏋️ Train & Evaluate
+    runs-on: ubuntu-latest
+    needs: lint
+    strategy:
+      matrix:
+        config: [configs/qlearning_v1.yaml, configs/qlearning_v2.yaml]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Train agent
+        run: |
+          python train.py --config ${{ matrix.config }}
+
+      - name: Evaluate agent
+        run: |
+          python evaluate.py --config ${{ matrix.config }}
+
+      - name: Upload results artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: results-${{ hashFiles(matrix.config) }}
+          path: |
+            results/
+            models/
+            mlruns/
+
+  # ────────────────────────────────────────────
+  # Job 3: Docker Build (validate containerization)
+  # ────────────────────────────────────────────
+  docker:
+    name: 🐳 Docker Build
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t wildfire-rl:latest .
+
+      - name: Test Docker container
+        run: |
+          docker run --rm wildfire-rl:latest python -c "from sim.wildfire_env import WildfireEnv; print('✅ Environment OK')"

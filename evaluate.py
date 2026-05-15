@@ -12,6 +12,7 @@ Outputs:
   - results/comparison_<experiment>.csv
   - results/reward_curve.png        (average reward over episodes)
   - results/burned_area_curve.png   (burned cells over episodes)
+  - MLflow: logs evaluation metrics and plots as artifacts
 """
 
 import argparse
@@ -21,12 +22,18 @@ import csv
 import yaml
 import numpy as np
 import json
-import mlflow
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from sim.wildfire_env import WildfireEnv
-from src.agent import QLearningAgent
+from sim.wildfire_env import WildfireEnv  # noqa: E402
+from src.agent import QLearningAgent  # noqa: E402
+
+# ── MLflow Integration ──
+try:
+    import mlflow
+    MLFLOW_AVAILABLE = True
+except ImportError:
+    MLFLOW_AVAILABLE = False
 
 
 def load_config(config_path):
@@ -150,6 +157,8 @@ def plot_training_curves(exp_name):
     print(f"[PLOT] Saved {burned_path}")
     plt.close()
 
+    return reward_path, burned_path
+
 
 def main():
     parser = argparse.ArgumentParser(
@@ -180,7 +189,18 @@ def main():
     print("=" * 60)
     print("  WILDFIRE CONTAINMENT — EVALUATION")
     print(f"  Experiment: {exp_name}")
+    print(f"  MLflow    : {'[OK] Active' if MLFLOW_AVAILABLE else '[X] Not installed'}")
     print("=" * 60)
+
+    # ── MLflow: Start evaluation run ──
+    mlflow_run = None
+    if MLFLOW_AVAILABLE:
+        mlflow.set_experiment("Wildfire-Containment-RL")
+        mlflow_run = mlflow.start_run(run_name=f"{exp_name}-eval")
+        mlflow.log_param("eval_type", "baseline_vs_rl")
+        mlflow.log_param("eval_episodes", args.eval_episodes)
+        mlflow.log_param("policy_file", args.policy)
+        mlflow.log_param("experiment_name", exp_name)
 
     n = args.eval_episodes
     print(f"\nRunning {n} episodes each for Baseline and RL...\n")
@@ -217,16 +237,16 @@ def main():
     print(f"\n[RESULTS] Comparison saved to {comp_path}")
 
     # --- Plot training curves ---
-    plot_training_curves(exp_name)
+    plot_paths = plot_training_curves(exp_name)
 
     # --- SDG Impact ---
     print("\n" + "=" * 60)
     print("  SDG IMPACT ANALYSIS")
     print("=" * 60)
-    print(f"  Reducing average burned area by {improvement_burned:.1f}% supports:")
-    print(f"    • SDG 13 (Climate Action) — fewer CO2 emissions from wildfires")
-    print(f"    • SDG 15 (Life on Land)   — preserved forest ecosystems & biodiversity")
-    print(f"  Optimised resource deployment saves firefighting costs and lives.")
+    print("  Reducing average burned area by {:.1f}% supports:".format(improvement_burned))
+    print("    • SDG 13 (Climate Action) — fewer CO2 emissions from wildfires")
+    print("    • SDG 15 (Life on Land)   — preserved forest ecosystems & biodiversity")
+    print("  Optimised resource deployment saves firefighting costs and lives.")
     print("=" * 60)
 
     # --- Save evaluation summary JSON ---
@@ -240,29 +260,38 @@ def main():
         "burned_reduction_pct": round(improvement_burned, 1),
         "sdg_alignment": ["SDG 13 (Climate Action)", "SDG 15 (Life on Land)"],
     }
+
+    # Add MLflow run ID if available
+    if MLFLOW_AVAILABLE and mlflow_run:
+        eval_summary["mlflow_run_id"] = mlflow_run.info.run_id
+
     eval_path = f"results/evaluation_{exp_name}.json"
     with open(eval_path, "w") as f:
         json.dump(eval_summary, f, indent=2)
     print(f"[MLOPS] Evaluation summary saved to {eval_path}")
 
-    # --- Log to MLflow ---
-    mlflow.set_experiment(exp_name)
-    with mlflow.start_run(run_name=f"eval_{exp_name}"):
+    # ── MLflow: Log evaluation metrics and artifacts ──
+    if MLFLOW_AVAILABLE:
         mlflow.log_metrics({
-            "baseline_avg_reward": float(base_reward),
-            "baseline_avg_burned": float(base_burned),
-            "rl_avg_reward": float(rl_reward),
-            "rl_avg_burned": float(rl_burned),
-            "burned_reduction_pct": float(improvement_burned)
+            "baseline_avg_reward": round(base_reward, 2),
+            "baseline_avg_burned": round(base_burned, 1),
+            "rl_avg_reward": round(rl_reward, 2),
+            "rl_avg_burned": round(rl_burned, 1),
+            "burned_reduction_pct": round(improvement_burned, 1),
         })
-        mlflow.log_artifact(eval_path, artifact_path="evaluation")
         mlflow.log_artifact(comp_path, artifact_path="evaluation")
-        # Log plot artifacts if they exist
-        if os.path.exists(f'results/reward_curve_{exp_name}.png'):
-            mlflow.log_artifact(f'results/reward_curve_{exp_name}.png', artifact_path="evaluation_plots")
-        if os.path.exists(f'results/burned_area_curve_{exp_name}.png'):
-            mlflow.log_artifact(f'results/burned_area_curve_{exp_name}.png', artifact_path="evaluation_plots")
-    print(f"[MLOPS] Metrics and artifacts logged to MLflow Registry")
+        mlflow.log_artifact(eval_path, artifact_path="evaluation")
+
+        # Log plot artifacts if they were generated
+        if plot_paths:
+            reward_plot, burned_plot = plot_paths
+            if os.path.exists(reward_plot):
+                mlflow.log_artifact(reward_plot, artifact_path="plots")
+            if os.path.exists(burned_plot):
+                mlflow.log_artifact(burned_plot, artifact_path="plots")
+
+        mlflow.end_run()
+        print(f"[MLFLOW] Evaluation run logged: {mlflow_run.info.run_id}")
 
 
 if __name__ == "__main__":
