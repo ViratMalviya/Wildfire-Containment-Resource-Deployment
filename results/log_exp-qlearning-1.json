@@ -1,12 +1,12 @@
 {
-  "run_id": "exp-qlearning-1_20260511_104802",
+  "run_id": "exp-qlearning-1_20260523_113744",
   "experiment_name": "exp-qlearning-1",
-  "timestamp": "2026-05-11T10:48:02.708403",
+  "timestamp": "2026-05-23T11:37:44.694991",
   "episodes": 800,
-  "average_reward": -271.17,
-  "average_burned": 312.93,
-  "final_reward_avg_50": -258.52,
-  "final_burned_avg_50": 299.84,
+  "average_reward": -259.97,
+  "average_burned": 300.56,
+  "final_reward_avg_50": -247.84,
+  "final_burned_avg_50": 287.36,
   "parameters": {
     "learning_rate": 0.1,
     "discount_factor": 0.95,
@@ -17,11 +17,12 @@
     "wind_direction": "N",
     "base_spread_prob": 0.3
   },
-  "training_time_seconds": 20.6,
-  "q_table_states": 1539,
+  "training_time_seconds": 27.6,
+  "q_table_states": 1460,
   "policy_files": [
     "models/policy_exp-qlearning-1_ep400.pkl",
     "models/policy_exp-qlearning-1_ep800.pkl",
     "models/policy_exp-qlearning-1_final.pkl"
-  ]
+  ],
+  "mlflow_run_id": "21c28f0ae62e440699ecb5e460a75fda"
 }
