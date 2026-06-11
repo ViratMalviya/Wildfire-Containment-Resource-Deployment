@@ -1,1 +1,1 @@
-# Feature engineering modules
+"""src/features — Feature engineering for wildfire RL agents."""

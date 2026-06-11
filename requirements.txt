@@ -5,3 +5,6 @@ numpy>=1.21.0
 pyyaml>=6.0
 matplotlib>=3.5.0
 mlflow>=2.10.0
+
+# Deep Learning — CPU-only PyTorch (lightweight for CI; GPU auto-detected at runtime)
+torch>=2.0.0

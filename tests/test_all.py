@@ -6,6 +6,7 @@ Comprehensive test suite for environment, agents, features, and API.
 
 import sys
 import os
+import pytest
 import numpy as np
 import json
 
@@ -99,12 +100,13 @@ def test_sarsa_agent():
 
 
 def test_dqn_agent():
-    """Test DQN agent."""
+    """Test DQN agent — skipped automatically if PyTorch is not installed."""
+    pytest.importorskip("torch", reason="PyTorch not installed — skipping DQN test")
     agent = DQNAgent(state_size=8, action_size=4, hidden_dim=32, batch_size=4)
     state = (0, 1, 0, 2, 1, 1, 0, 0)
     action = agent.choose_action(state)
     assert 0 <= action < 4
-    
+
     # Store some transitions
     for _ in range(10):
         next_state = tuple(np.random.randint(0, 3, 8))

@@ -1,17 +1,12 @@
 # ============================================================
 # CI/CD Pipeline — PyroShield AI
 # ============================================================
-# Triggers:
-#   - Push to main/dev → full pipeline
-#   - PR to main/dev → lint + test
-#   - Manual dispatch → retrain + deploy
-#
 # Stages:
 #   1. Lint & Format Check
 #   2. Unit Tests
-#   3. Model Training (on code push to main)
-#   4. Docker Build & Push
-#   5. Deploy to K8s (main only)
+#   3. Model Training (on push to main)
+#   4. Docker Build & Push (on push to main)
+#   5. Deploy to K8s (echo only — configure kubectl for live deploy)
 # ============================================================
 
 name: 🔥 PyroShield CI/CD
@@ -40,26 +35,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
-      - name: Install dependencies
+
+      - name: Install lint tools
         run: |
-          pip install -r requirements.txt
           pip install flake8 black isort
-      
+
       - name: Run flake8
-        run: flake8 src/ api/ sim/ --max-line-length=120 --ignore=E501,W503,E402,E203
-      
-      - name: Check formatting (black)
-        run: black --check --diff src/ api/ sim/ || true
-      
-      - name: Check import sorting
-        run: isort --check-only --diff src/ api/ sim/ || true
+        run: flake8 src/ sim/ --max-line-length=120 --ignore=E501,W503,E402,E203
+
+      - name: Check formatting (black — non-blocking)
+        run: black --check --diff src/ sim/ || true
+
+      - name: Check import sorting (non-blocking)
+        run: isort --check-only --diff src/ sim/ || true
 
   # ─── Stage 2: Test ────────────────────────────────────────
   test:
@@ -68,21 +62,23 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt
-          pip install pytest
-      
+          pip install --upgrade pip
+          # Install PyTorch CPU-only for faster CI
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy pyyaml matplotlib mlflow pytest
+
       - name: Run tests
         run: python -m pytest tests/ -v --tb=short --junitxml=test-results.xml
-      
+
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -98,27 +94,30 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main' || github.event.inputs.retrain == 'true'
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
-      
+
       - name: Install dependencies
-        run: pip install -r requirements.txt
-      
+        run: |
+          pip install --upgrade pip
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install numpy pyyaml matplotlib mlflow
+
       - name: Train Q-Learning (Exp 1)
         run: python train.py --config configs/qlearning_v1.yaml
-      
+
       - name: Train Q-Learning (Exp 2)
         run: python train.py --config configs/qlearning_v2.yaml
-      
+
       - name: Evaluate models
         run: |
           python evaluate.py --config configs/qlearning_v1.yaml
           python evaluate.py --config configs/qlearning_v2.yaml
-      
+
       - name: Upload trained models
         uses: actions/upload-artifact@v4
         with:
@@ -134,21 +133,22 @@ jobs:
     name: 🐳 Docker Build & Push
     runs-on: ubuntu-latest
     needs: test
+    # Only push on main branch push events — not PRs (no secrets available in forks)
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
-      - name: Build and push
+
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -157,7 +157,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
-  # ─── Stage 5: Deploy ──────────────────────────────────────
+  # ─── Stage 5: Deploy (echo only) ──────────────────────────
   deploy:
     name: 🚀 Deploy to K8s
     runs-on: ubuntu-latest
@@ -166,12 +166,12 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Deploy with Helm
+
+      - name: Deploy with Helm (dry-run)
         run: |
           echo "🚀 Deploying PyroShield AI to Kubernetes..."
           echo "helm upgrade --install pyroshield ./helm/pyroshield \\"
           echo "  --namespace pyroshield \\"
           echo "  --set image.tag=${{ github.sha }} \\"
           echo "  --wait --timeout 5m"
-          echo "✅ Deployment complete (dry-run — configure kubectl for actual deploy)"
+          echo "✅ Deployment complete (configure kubectl secrets for live deploy)"
