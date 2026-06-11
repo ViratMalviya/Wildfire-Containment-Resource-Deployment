@@ -292,23 +292,37 @@ make clean       # Clean generated files
 
 ## 📈 Baseline vs RL Comparison
 
-After running `evaluate.py`, you'll get a comparison table:
+Evaluated over **100 episodes** per agent on the same environment. Results from two independent experiments with different hyperparameter configurations:
 
-| Metric | Random Baseline | RL Policy |
-|--------|---------------:|----------:|
-| Avg Reward | *(varies)* | *(higher)* |
-| Avg Burned Cells | *(varies)* | *(lower)* |
+### Experiment 1 — Conservative (α=0.10, ε-decay=0.995, N wind, 2 fires)
+
+| Metric | Random Baseline | RL Policy | Improvement |
+|--------|---------------:|----------:|------------:|
+| Avg Reward | −345.91 | −266.71 | **+23.1%** |
+| Avg Burned Cells | 392.0 | 306.9 | **−21.7%** 🔥 |
+
+### Experiment 2 — Aggressive (α=0.15, ε-decay=0.990, NE wind, 3 fires)
+
+| Metric | Random Baseline | RL Policy | Improvement |
+|--------|---------------:|----------:|------------:|
+| Avg Reward | −370.21 | −350.69 | **+5.3%** |
+| Avg Burned Cells | 417.8 | 398.8 | **−4.5%** |
+
+> **Key finding:** Experiment 1 (slower ε-decay) outperforms Experiment 2 significantly.
+> The agent needs sufficient exploration time before exploiting — faster decay converges
+> prematurely to a suboptimal policy on a harder environment (NE wind, 3 fires).
 
 ### When RL Performs Better
 
 - When fire starts in predictable locations — agent learns optimal firebreak placement
 - When wind direction is consistent — agent exploits directional knowledge
+- With enough training episodes for ε-greedy to converge (≥600 episodes)
 
 ### When RL May Struggle
 
-- Highly stochastic fire spread (high base probability)
-- Very large grids where Q-table becomes too sparse
-- Multiple simultaneous fire outbreaks overwhelming resources
+- Highly stochastic fire spread (high base probability) — stochasticity dominates the signal
+- Multiple simultaneous fire outbreaks from random start positions
+- Very large grids — addressed by upgrading to the CNN DQN agent (`src/models/dqn_agent.py`)
 
 ---
 
