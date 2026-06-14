@@ -46,6 +46,18 @@ except ImportError:
     print("[WARN] MLflow not installed — experiment tracking will use local JSON/CSV only.")
     print("       Install with: pip install mlflow")
 
+if MLFLOW_AVAILABLE:
+    class QLearnPolicyModel(mlflow.pyfunc.PythonModel):
+        """Wraps the Q-learning policy for MLflow Model Registry."""
+        def load_context(self, context):
+            import pickle
+            with open(context.artifacts["policy"], "rb") as f:
+                self.policy_data = pickle.load(f)
+
+        def predict(self, context, model_input):
+            return {"policy_loaded": True, "q_table_size": len(self.policy_data.get("q_table", {}))}
+
+
 
 def load_config(config_path):
     """Load YAML configuration file."""
@@ -262,17 +274,6 @@ def train(config):
         # ── Register model in MLflow Model Registry ──
         try:
             model_name = "wildfire-qlearning-policy"
-
-            # Define a minimal PythonModel wrapper for the Q-learning policy
-            class QLearnPolicyModel(mlflow.pyfunc.PythonModel):
-                """Wraps the Q-learning policy for MLflow Model Registry."""
-                def load_context(self, context):
-                    import pickle
-                    with open(context.artifacts["policy"], "rb") as f:
-                        self.policy_data = pickle.load(f)
-
-                def predict(self, context, model_input):
-                    return {"policy_loaded": True, "q_table_size": len(self.policy_data.get("q_table", {}))}
 
             mlflow.pyfunc.log_model(
                 artifact_path="policy_model",
