@@ -57,8 +57,6 @@ if MLFLOW_AVAILABLE:
         def predict(self, context, model_input):
             return {"policy_loaded": True, "q_table_size": len(self.policy_data.get("q_table", {}))}
 
-
-
 def load_config(config_path):
     """Load YAML configuration file."""
     with open(config_path, "r") as f:
