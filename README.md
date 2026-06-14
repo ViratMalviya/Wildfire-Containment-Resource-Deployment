@@ -1,19 +1,15 @@
-# 🔥 Wildfire Containment & Resource Deployment — RL + MLOps
+# Wildfire Containment & Resource Deployment — RL + MLOps
 
-> **RL Problem Statement:** An agent decides where to deploy firefighting resources
-> (ground crews, helicopters) on a grid-based wildfire simulator to **minimise
-> burned area**.
+> **RL Problem Statement:** An agent decides where to deploy firefighting resources (ground crews, helicopters) on a grid-based wildfire simulator to **minimise burned area**.
 
-## 🌍 SDG Alignment
+## SDG Alignment
 
 | SDG | Connection |
 |-----|-----------|
 | **SDG 13 — Climate Action** | Reducing wildfire damage lowers CO₂ emissions and helps combat climate change |
 | **SDG 15 — Life on Land** | Preserving forest ecosystems protects terrestrial biodiversity and habitats |
 
----
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 wildfire-rl/
@@ -54,9 +50,7 @@ wildfire-rl/
 └── README.md                      # This file
 ```
 
----
-
-## 🚀 Quick Start (Running Locally)
+## Quick Start (Running Locally)
 
 ### 1. Install dependencies
 
@@ -96,13 +90,11 @@ python -m http.server 8080 -d frontend
 ```
 *Dashboard runs on `http://localhost:8080`*
 
-### 🛑 How to Stop Gracefully
+### How to Stop Gracefully
 
 If you are running the scripts manually in your terminal, press `Ctrl+C` in the respective terminal windows to safely terminate the running servers and python scripts.
 
----
-
-## 🐳 Docker Deployment (Recommended)
+## Docker Deployment (Recommended)
 
 The easiest way to run the **entire stack** (MLflow Tracking, Training, Evaluation, Backend API, and Frontend Dashboard) is using Docker.
 
@@ -113,9 +105,9 @@ docker-compose up -d --build
 ```
 
 **Services Available:**
-- 🖥️ **Frontend Dashboard**: `http://localhost:8080`
-- ⚡ **Backend API Docs**: `http://localhost:8000/docs`
-- 📊 **MLflow Tracking UI**: `http://localhost:5000`
+- **Frontend Dashboard**: `http://localhost:8080`
+- **Backend API Docs**: `http://localhost:8000/docs`
+- **MLflow Tracking UI**: `http://localhost:5000`
 
 ### Stop the Full Stack Gracefully
 
@@ -127,13 +119,11 @@ docker-compose down
 
 *(Note: Data is persisted in the `mlflow-data` volume and the mapped `results` directory).*
 
----
-
-## 🎮 Simulator
+## Simulator
 
 The **WildfireEnv** is a grid-based wildfire spread simulator:
 
-- **Grid:** 10×10 cells, each cell is one of: `EMPTY`, `TREE 🌲`, `BURNING 🔥`, `BURNED ⬛`, `FIREBREAK 🧱`
+- **Grid:** 10×10 cells, each cell is one of: `EMPTY`, `TREE`, `BURNING`, `BURNED`, `FIREBREAK`
 - **Fire Spread:** Probabilistic — each burning cell may ignite neighbouring trees, biased by wind direction
 - **Resources:** The agent deploys firefighting resources to cells to create firebreaks or suppress active fires
 - **Episode ends** when: fire is fully contained OR max steps reached
@@ -146,15 +136,11 @@ The **WildfireEnv** is a grid-based wildfire spread simulator:
 | **Action** | Sector index 0–3 — which quadrant to deploy resources to |
 | **Reward** | `−(newly burned cells) + 2.0 × (cells suppressed)` — penalises fire spread, rewards suppression |
 
----
-
-## 🤖 RL Algorithm
+## RL Algorithm
 
 ### Algorithm Choice: **Q-Learning**
 
-> *"Q-learning is chosen because the state space (discretised grid) is manageable
-> for a tabular approach, and Q-learning's off-policy nature allows efficient
-> learning from exploratory actions."*
+> *"Q-learning is chosen because the state space (discretised grid) is manageable for a tabular approach, and Q-learning's off-policy nature allows efficient learning from exploratory actions."*
 
 ### Exploration Strategy: **ε-greedy with decay**
 
@@ -175,13 +161,9 @@ Where:
 
 ### Convergence
 
-> *"Average reward improves over time and stabilises — the agent learns to
-> strategically place firebreaks near the fire front rather than deploying
-> resources randomly."*
+> *"Average reward improves over time and stabilises — the agent learns to strategically place firebreaks near the fire front rather than deploying resources randomly."*
 
----
-
-## 📊 MLOps Pipeline
+## MLOps Pipeline
 
 ### Experiment Tracking (MLflow)
 
@@ -223,9 +205,7 @@ Each training run produces `results/results_<experiment>.csv` containing:
 | `policy_exp-qlearning-2_ep400.pkl` | V2 policy at 400 episodes |
 | `policy_exp-qlearning-2_final.pkl` | V2 final policy |
 
----
-
-## 🔁 CI/CD Pipeline
+## CI/CD Pipeline
 
 GitHub Actions runs automatically on every push to `main`/`develop`:
 
@@ -238,9 +218,7 @@ GitHub Actions runs automatically on every push to `main`/`develop`:
 
 See [`.github/workflows/ml_pipeline.yml`](.github/workflows/ml_pipeline.yml)
 
----
-
-## 🔄 Reproducibility & Versioning
+## Reproducibility & Versioning
 
 ### Reproduce a Run
 
@@ -288,9 +266,7 @@ make docker-up   # Start Docker stack
 make clean       # Clean generated files
 ```
 
----
-
-## 📈 Baseline vs RL Comparison
+## Baseline vs RL Comparison
 
 Evaluated over **100 episodes** per agent on the same environment. Results from two independent experiments with different hyperparameter configurations:
 
@@ -299,7 +275,7 @@ Evaluated over **100 episodes** per agent on the same environment. Results from 
 | Metric | Random Baseline | RL Policy | Improvement |
 |--------|---------------:|----------:|------------:|
 | Avg Reward | −345.91 | −266.71 | **+23.1%** |
-| Avg Burned Cells | 392.0 | 306.9 | **−21.7%** 🔥 |
+| Avg Burned Cells | 392.0 | 306.9 | **−21.7%** |
 
 ### Experiment 2 — Aggressive (α=0.15, ε-decay=0.990, NE wind, 3 fires)
 
@@ -308,9 +284,7 @@ Evaluated over **100 episodes** per agent on the same environment. Results from 
 | Avg Reward | −370.21 | −350.69 | **+5.3%** |
 | Avg Burned Cells | 417.8 | 398.8 | **−4.5%** |
 
-> **Key finding:** Experiment 1 (slower ε-decay) outperforms Experiment 2 significantly.
-> The agent needs sufficient exploration time before exploiting — faster decay converges
-> prematurely to a suboptimal policy on a harder environment (NE wind, 3 fires).
+> **Key finding:** Experiment 1 (slower ε-decay) outperforms Experiment 2 significantly. The agent needs sufficient exploration time before exploiting — faster decay converges prematurely to a suboptimal policy on a harder environment (NE wind, 3 fires).
 
 ### When RL Performs Better
 
@@ -324,9 +298,7 @@ Evaluated over **100 episodes** per agent on the same environment. Results from 
 - Multiple simultaneous fire outbreaks from random start positions
 - Very large grids — addressed by upgrading to the CNN DQN agent (`src/models/dqn_agent.py`)
 
----
-
-## 📡 Monitoring Plan (Design Only — No Live Deployment)
+## Monitoring Plan (Design Only — No Live Deployment)
 
 If this system were deployed in real-world wildfire management, we would monitor:
 
@@ -337,9 +309,7 @@ If this system were deployed in real-world wildfire management, we would monitor
 - **Model drift** — degradation of policy performance as climate/vegetation patterns change
 - **Safety constraints** — ensure no resources deployed into actively burning zones (crew safety)
 
----
-
-## 🏷️ Git & GitOps
+## Git & GitOps
 
 ### Branching Strategy
 
@@ -360,22 +330,16 @@ git tag exp-qlearning-1   # After first experiment
 git tag exp-qlearning-2   # After second experiment
 ```
 
----
+## SDG Impact
 
-## 🌱 SDG Impact
-
-> *"Reducing average burned area by X% supports SDG 13 (Climate Action) by
-> lowering CO₂ and particulate emissions from wildfires, and SDG 15 (Life on
-> Land) by preserving forest ecosystems and protecting biodiversity."*
+> *"Reducing average burned area by X% supports SDG 13 (Climate Action) by lowering CO₂ and particulate emissions from wildfires, and SDG 15 (Life on Land) by preserving forest ecosystems and protecting biodiversity."*
 
 Optimised resource deployment also:
 - Reduces firefighting costs and response times
 - Minimises risk to human lives and infrastructure
 - Supports data-driven disaster management strategies
 
----
-
-## 📋 Results & Limitations
+## Results & Limitations
 
 ### Results
 - Q-learning agent learns to strategically deploy resources near fire fronts
@@ -393,9 +357,7 @@ Optimised resource deployment also:
 - Multi-agent RL for coordinated resource deployment
 - Integration with real satellite fire detection data
 
----
-
-## 📝 Documentation
+## Documentation
 
 | Document | Description |
 |----------|------------|
