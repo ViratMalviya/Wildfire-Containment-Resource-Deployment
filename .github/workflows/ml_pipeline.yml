@@ -8,8 +8,7 @@ on:
 
 env:
   PYTHON_VERSION: "3.11"
-  MLFLOW_TRACKING_URI: "file:./mlruns"
-  MLFLOW_ALLOW_FILE_STORE: "true"
+  MLFLOW_TRACKING_URI: "sqlite:///mlflow.db"
 
 jobs:
   # ────────────────────────────────────────────
@@ -112,6 +111,7 @@ jobs:
             results/
             models/
             mlruns/
+            mlflow.db
 
   # ────────────────────────────────────────────
   # Job 4: Docker Build (validate containerisation)

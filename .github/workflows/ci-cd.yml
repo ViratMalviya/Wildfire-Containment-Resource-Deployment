@@ -27,7 +27,7 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository_owner }}/pyroshield-api
-  MLFLOW_ALLOW_FILE_STORE: "true"
+  MLFLOW_TRACKING_URI: "sqlite:///mlflow.db"
 
 jobs:
   # ─── Stage 1: Lint ────────────────────────────────────────
