@@ -9,6 +9,7 @@ on:
 env:
   PYTHON_VERSION: "3.11"
   MLFLOW_TRACKING_URI: "file:./mlruns"
+  MLFLOW_ALLOW_FILE_STORE: "true"
 
 jobs:
   # ────────────────────────────────────────────
