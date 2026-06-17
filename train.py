@@ -102,6 +102,7 @@ def train(config):
 
     # ── MLflow: Set up experiment ──
     if MLFLOW_AVAILABLE:
+        mlflow.set_tracking_uri("sqlite:///mlflow.db")
         mlflow.set_experiment("Wildfire-Containment-RL")
 
     # Use MLflow context manager for auto-logging

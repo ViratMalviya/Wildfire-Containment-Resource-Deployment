@@ -57,6 +57,7 @@ def train_with_tracking(config, experiment_name="wildfire-containment"):
 
     # Setup MLflow
     if MLFLOW_AVAILABLE:
+        mlflow.set_tracking_uri("sqlite:///mlflow.db")
         mlflow.set_experiment(experiment_name)
         mlflow.start_run(run_name=f"{exp_name}_{algorithm}")
 

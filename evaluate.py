@@ -195,6 +195,7 @@ def main():
     # ── MLflow: Start evaluation run ──
     mlflow_run = None
     if MLFLOW_AVAILABLE:
+        mlflow.set_tracking_uri("sqlite:///mlflow.db")
         mlflow.set_experiment("Wildfire-Containment-RL")
         mlflow_run = mlflow.start_run(run_name=f"{exp_name}-eval")
         mlflow.log_param("eval_type", "baseline_vs_rl")
